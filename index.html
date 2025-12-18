@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Kalkulator Penghitungan Emas</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.css"
+    />
+    <style>
+      /* Mobile-specific fixes */
+      @media (max-width: 480px) {
+        .container {
+          padding: 10px !important;
+        }
+
+        .calculator-card,
+        .info-card {
+          padding: 20px 15px !important;
+        }
+
+        .form-control,
+        .select2-container--default .select2-selection--single {
+          font-size: 16px !important; /* Mencegah zoom di iOS */
+        }
+
+        .keranjang-table th,
+        .keranjang-table td {
+          padding: 8px 4px !important;
+          font-size: 12px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1><i class="fas fa-calculator"></i> Kalkulator Emas</h1>
+        <p>Hitung harga emas dengan mudah dan akurat</p>
+      </header>
+
+      <div class="calculator-container">
+        <!-- Kartu Kalkulator -->
+        <div class="calculator-card">
+          <div class="card-header">
+            <h2><i class="fas fa-gem"></i> Kalkulator Harga Emas</h2>
+            <div class="cokim-info">
+              <span>COKIM: <span id="cokim-value">Loading...</span></span>
+              <span class="loading-indicator" id="data-loading">
+                <i class="fas fa-spinner fa-spin"></i> Memuat data...
+              </span>
+            </div>
+          </div>
+
+          <!-- Form Input -->
+          <div class="form-group">
+            <label for="nama-barang"
+              ><i class="fas fa-tag"></i> Nama Barang</label
+            >
+            <div class="input-with-button">
+              <select id="nama-barang" class="form-control select2-custom">
+                <option value="">Pilih atau cari barang...</option>
+              </select>
+              <button id="toggle-manual" class="btn-toggle" type="button">
+                <i class="fas fa-edit"></i> Input Manual
+              </button>
+            </div>
+            <div
+              id="manual-input-container"
+              class="manual-input-container"
+              style="display: none"
+            >
+              <input
+                type="text"
+                id="manual-nama-barang"
+                class="form-control"
+                placeholder="Masukkan nama barang manual"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="kode-barang"
+              ><i class="fas fa-barcode"></i> Kode Barang</label
+            >
+            <input
+              type="number"
+              id="kode-barang"
+              class="form-control"
+              min="0"
+              placeholder="Masukkan kode barang"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="harga-pergram"
+              ><i class="fas fa-money-bill-wave"></i> Harga Per Gram
+              (IDR)</label
+            >
+            <div class="input-with-info">
+              <input
+                type="number"
+                id="harga-pergram"
+                class="form-control"
+                min="0"
+                readonly
+              />
+              <div class="info-badge">IDR/gram</div>
+            </div>
+            <small class="formula-info" id="harga-info">
+              Harga berdasarkan COKIM dan kode barang
+            </small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ongkos"
+                ><i class="fas fa-truck"></i> Ongkos (IDR/gram)</label
+              >
+              <input
+                type="number"
+                id="ongkos"
+                class="form-control"
+                min="0"
+                placeholder="Masukkan ongkos"
+                value=""
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="berat"
+                ><i class="fas fa-weight-hanging"></i> Berat (gram)</label
+              >
+              <input
+                type="number"
+                id="berat"
+                class="form-control"
+                min="0.01"
+                placeholder="Masukkan berat"
+                value=""
+                step="0.01"
+              />
+              <small class="formula-info">
+                Catatan: Ongkos dihitung minimum 1 gram untuk berat 0.1-1 gram
+              </small>
+            </div>
+          </div>
+
+          <!-- Hasil Perhitungan -->
+          <div class="results-section">
+            <h3><i class="fas fa-calculator"></i> Hasil Perhitungan</h3>
+
+            <div class="result-item">
+              <div class="result-label">
+                <i class="fas fa-box"></i> Harga Barang
+              </div>
+              <div class="result-value" id="harga-barang">IDR 0</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">
+                <i class="fas fa-shipping-fast"></i> Harga Ongkos
+                <span id="ongkos-info" class="info-badge-small"></span>
+              </div>
+              <div class="result-value" id="harga-ongkos">IDR 0</div>
+            </div>
+
+            <div class="result-item total">
+              <div class="result-label">
+                <i class="fas fa-file-invoice-dollar"></i> Harga Total
+              </div>
+              <div class="result-value" id="harga-total">IDR 0</div>
+            </div>
+          </div>
+
+          <!-- Tombol Aksi -->
+          <div class="actions">
+            <button id="hitung" class="btn-hitung" type="button">
+              <i class="fas fa-calculator"></i> Hitung
+            </button>
+            <button
+              id="tambah-keranjang"
+              class="btn-keranjang"
+              type="button"
+              disabled
+            >
+              <i class="fas fa-cart-plus"></i> Tambah ke Keranjang
+            </button>
+            <button id="reset" class="btn-reset" type="button">
+              <i class="fas fa-redo"></i> Reset
+            </button>
+          </div>
+
+          <div class="data-status" id="data-status">
+            <i class="fas fa-database"></i> Data dimuat dari Google Sheets
+          </div>
+
+          <!-- Keranjang Section -->
+          <div
+            class="keranjang-section"
+            id="keranjang-section"
+            style="display: none"
+          >
+            <h3>
+              <i class="fas fa-shopping-cart"></i> Keranjang Belanja
+              <span id="keranjang-count" class="keranjang-count">(0)</span>
+            </h3>
+
+            <div class="keranjang-table-container">
+              <table class="keranjang-table" id="keranjang-table">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama Barang</th>
+                    <th>Kode</th>
+                    <th>Harga/Gr</th>
+                    <th>Berat</th>
+                    <th>Harga</th>
+                    <th>Ongkos</th>
+                    <th>Total</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="keranjang-body"></tbody>
+                <tfoot>
+                  <tr class="total-footer">
+                    <td colspan="5" class="text-right">
+                      <strong>Total Keseluruhan:</strong>
+                    </td>
+                    <td id="total-harga-barang">IDR 0</td>
+                    <td id="total-ongkos">IDR 0</td>
+                    <td id="total-keseluruhan" colspan="2">IDR 0</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div class="keranjang-actions">
+              <button
+                id="kosongkan-keranjang"
+                class="btn-kosongkan"
+                type="button"
+              >
+                <i class="fas fa-trash"></i> Kosongkan Keranjang
+              </button>
+              <button id="simpan-keranjang" class="btn-simpan" type="button">
+                <i class="fas fa-save"></i> Simpan Keranjang
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kartu Info -->
+        <div class="info-card">
+          <h3><i class="fas fa-info-circle"></i> Panduan Penggunaan</h3>
+          <ol>
+            <li>Pilih nama barang dari dropdown atau gunakan input manual</li>
+            <li>Kode barang akan terisi otomatis jika memilih dari dropdown</li>
+            <li>
+              Harga per gram akan dihitung otomatis berdasarkan kode dan COKIM
+            </li>
+            <li>Masukkan ongkos per gram dan berat emas dalam gram</li>
+            <li>Klik tombol "Hitung" untuk melihat hasil perhitungan</li>
+            <li>Klik "Tambah ke Keranjang" untuk menyimpan perhitungan</li>
+          </ol>
+
+          <div class="spreadsheet-info">
+            <h4><i class="fas fa-database"></i> Sumber Data</h4>
+            <p>Data diambil langsung dari Google Sheets:</p>
+            <a
+              href="https://docs.google.com/spreadsheets/d/1t6qgrjxls-5AT7VA6ELRYW4BOq4Nr1EVn9B1D9R-ZrU/edit?gid=0#gid=0"
+              target="_blank"
+              rel="noopener"
+            >
+              <i class="fas fa-external-link-alt"></i> Buka Spreadsheet
+            </a>
+            <div class="data-structure">
+              <p><strong>Struktur Data:</strong></p>
+              <ul>
+                <li><span class="data-label">COKIM:</span> Kolom A3</li>
+                <li><span class="data-label">Kode:</span> Kolom C</li>
+                <li><span class="data-label">Nama Barang:</span> Kolom D</li>
+                <li><span class="data-label">Harga Jual:</span> Kolom E</li>
+              </ul>
+            </div>
+            <button id="refresh-data" class="btn-refresh" type="button">
+              <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <p>Kalkulator Emas &copy; 2023 | Data langsung dari Google Sheets</p>
+      </footer>
+    </div>
+
+    <!-- Modal Edit Item -->
+    <div id="modal-edit" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><i class="fas fa-edit"></i> Edit Item Keranjang</h3>
+          <button class="modal-close" type="button">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="form-edit">
+            <input type="hidden" id="edit-id" />
+
+            <div class="form-group">
+              <label for="edit-nama"
+                ><i class="fas fa-tag"></i> Nama Barang</label
+              >
+              <input type="text" id="edit-nama" class="form-control" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-kode"
+                  ><i class="fas fa-barcode"></i> Kode</label
+                >
+                <input
+                  type="number"
+                  id="edit-kode"
+                  class="form-control"
+                  min="0"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="edit-harga-pergram"
+                  ><i class="fas fa-money-bill-wave"></i> Harga/Gram</label
+                >
+                <input
+                  type="number"
+                  id="edit-harga-pergram"
+                  class="form-control"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-berat"
+                  ><i class="fas fa-weight-hanging"></i> Berat (gram)</label
+                >
+                <input
+                  type="number"
+                  id="edit-berat"
+                  class="form-control"
+                  min="0.01"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="edit-ongkos"
+                  ><i class="fas fa-truck"></i> Ongkos/Gram</label
+                >
+                <input
+                  type="number"
+                  id="edit-ongkos"
+                  class="form-control"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-harga-barang"
+                  ><i class="fas fa-box"></i> Harga Barang</label
+                >
+                <input
+                  type="number"
+                  id="edit-harga-barang"
+                  class="form-control"
+                  min="0"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="edit-harga-ongkos"
+                  ><i class="fas fa-shipping-fast"></i> Harga Ongkos</label
+                >
+                <input
+                  type="number"
+                  id="edit-harga-ongkos"
+                  class="form-control"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-total"
+                ><i class="fas fa-file-invoice-dollar"></i> Total Harga</label
+              >
+              <input
+                type="number"
+                id="edit-total"
+                class="form-control"
+                min="0"
+                required
+              />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-reset modal-close">Batal</button>
+          <button type="button" id="btn-save-edit" class="btn-hitung">
+            Simpan Perubahan
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
