@@ -162,7 +162,7 @@ $(document).ready(function () {
 
       // Versi 3: Default jika semua gagal
       if (cokimValue === 0) {
-        cokimValue = 107.5;
+        cokimValue = 2290000;
         console.warn(
           "COKIM tidak ditemukan. Menggunakan nilai default:",
           cokimValue
